@@ -1,5 +1,6 @@
 package com.rsschool.quiz
 
+import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
@@ -10,9 +11,14 @@ import androidx.fragment.app.Fragment
 import com.rsschool.quiz.databinding.QuizResultBinding
 
 class QuizResult: Fragment(R.layout.quiz_result) {
-
     private var _binding: QuizResultBinding? = null
     private val binding get() = _binding!!
+    private lateinit var dataPasser: CheckedResult
+
+    override fun onAttach(context: Context) {
+        super.onAttach(context)
+        dataPasser = context as CheckedResult
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -30,10 +36,10 @@ class QuizResult: Fragment(R.layout.quiz_result) {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         binding.restart.setOnClickListener {
-            mainActivity().restart()
+            dataPasser.restartQuiz()
         }
         binding.exit.setOnClickListener {
-            mainActivity().exit()
+            dataPasser.finishQuiz()
 
         }
         binding.shareButton.setOnClickListener {

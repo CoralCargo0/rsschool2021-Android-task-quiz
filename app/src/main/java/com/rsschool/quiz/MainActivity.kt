@@ -16,7 +16,7 @@ class MainActivity : AppCompatActivity(), CheckedResult {
     private val question5: Array<String> = arrayOf("All classes in Kotlin classes are by default?", "public",
         "private", "abstract", "sealed", "final")
 
-    val questions = arrayOf(question1, question2, question3, question4, question5)
+    private val questions = arrayOf(question1, question2, question3, question4, question5)
     private var checkedRadioNumbers: Array<Int> = arrayOf(0, 0, 0, 0, 0)
     private val rightCheckedRadioNumbers: Array<Int> = arrayOf(3, 1, 2, 4, 5)
 
@@ -28,38 +28,24 @@ class MainActivity : AppCompatActivity(), CheckedResult {
         openNewFragment(checkedRadioNumbers[currentFragment - 1], question1)
     }
 
-    fun openNewFragment(checkedRadio: Int, strings: Array<String>) {
+    private fun openNewFragment(checkedRadio: Int, strings: Array<String>) {
         val fragment: Fragment = FragmentQuiz.newInstance(checkedRadio, strings, currentFragment)
         val transaction = supportFragmentManager.beginTransaction()
         transaction.replace(R.id.container, fragment)
         transaction.commit()
     }
 
-    fun openFragment(isNext: Boolean) {
+    override fun openFragment(isNext: Boolean) {
         if (isNext) currentFragment++
         else currentFragment--
 
-
         when(currentFragment) {
-            1 ->  {
-                openNewFragment(checkedRadioNumbers[currentFragment - 1], question1)
-            }
-            2 ->  {
-                openNewFragment(checkedRadioNumbers[currentFragment - 1], question2)
-            }
-            3 -> {
-                openNewFragment(checkedRadioNumbers[currentFragment - 1], question3)
-            }
-            4 -> {
-                openNewFragment(checkedRadioNumbers[currentFragment - 1], question4)
-            }
-            5 -> {
-                openNewFragment(checkedRadioNumbers[currentFragment - 1], question5)
-            }
             6 -> {
                 openResultFragment(produceResult())
             }
-
+            else ->  {
+                openNewFragment(checkedRadioNumbers[currentFragment - 1], questions[currentFragment - 1])
+            }
         }
     }
 
@@ -97,24 +83,24 @@ My answer: ${questions[4][checkedRadioNumbers[4]]} """
         transaction.commit()
     }
     override fun onBackPressed() {
-        if(currentFragment == 6) restart()
-        else if(currentFragment != 1) openFragment(false)
-        else super.onBackPressed()
+        when {
+            currentFragment == 6 -> restartQuiz()
+            currentFragment != 1 -> openFragment(false)
+            else -> super.onBackPressed()
+        }
     }
 
-    fun restart() {
+    override fun restartQuiz() {
         checkedRadioNumbers = arrayOf(0, 0, 0, 0, 0)
         currentFragment = 1
         openNewFragment(checkedRadioNumbers[currentFragment - 1], question1)
-
     }
 
-    fun exit() {
+    override fun finishQuiz() {
         super.onBackPressed()
     }
+
     override fun questionAnswerSaver(radioNumber: Int) {
         checkedRadioNumbers[currentFragment - 1] = radioNumber
     }
-
-
 }

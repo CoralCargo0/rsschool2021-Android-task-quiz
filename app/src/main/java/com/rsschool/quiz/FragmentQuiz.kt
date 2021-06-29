@@ -1,17 +1,41 @@
 package com.rsschool.quiz
 
+import android.content.Context
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.RadioButton
+import android.widget.RadioGroup
+import androidx.core.os.bundleOf
+import androidx.core.view.get
+import androidx.core.view.marginTop
 import androidx.fragment.app.Fragment
 import com.rsschool.quiz.databinding.FragmentQuizBinding
 
-class FragmentQuiz: Fragment(R.layout.fragment_quiz) {
-
-
+class FragmentQuiz : Fragment(R.layout.fragment_quiz) {
     private var _binding: FragmentQuizBinding? = null
     private val binding get() = _binding!!
+    private lateinit var dataPasser: CheckedResult
+
+    override fun onAttach(context: Context) {
+        super.onAttach(context)
+        dataPasser = context as CheckedResult
+    }
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+
+        requireContext().apply {
+            when (arguments?.getInt(WHAT_QUESTION_KEY)) {
+                1 -> setTheme(R.style.Theme_Quiz_First)
+                2 -> setTheme(R.style.Theme_Quiz_Second)
+                3 -> setTheme(R.style.Theme_Quiz_Third)
+                4 -> setTheme(R.style.Theme_Quiz_Fourth)
+                5 -> setTheme(R.style.Theme_Quiz_Fifth)
+            }
+        }
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -19,143 +43,78 @@ class FragmentQuiz: Fragment(R.layout.fragment_quiz) {
         savedInstanceState: Bundle?
     ): View {
         _binding = FragmentQuizBinding.inflate(inflater, container, false)
-        val view = binding.root
+        return binding.root
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
 
         val strings = arguments?.getStringArray(STRINGS_KEY)
         val whatRadioClicked = arguments?.getInt(PREVIOUS_RESULT_KEY)
         val whatQuestion = arguments?.getInt(WHAT_QUESTION_KEY)
         if (whatQuestion?.equals(5) == true) {
-            binding.nextButton.text = "Submit"
+            binding.nextButton.text = getString(R.string.next_button_text)
         }
 
-        activity?.window?.statusBarColor = getResources().getColor(R.color.black)
-        when (whatQuestion) {
-            1 -> activity?.setTheme(R.style.Theme_Quiz_First)
-            2 -> activity?.setTheme(R.style.Theme_Quiz_Third)
-            3 -> activity?.setTheme(R.style.Theme_Quiz_Third)
-            4 -> activity?.setTheme(R.style.Theme_Quiz_Fourth)
-            5 -> activity?.setTheme(R.style.Theme_Quiz_Fifth)
-        }
+//        activity?.window?.statusBarColor = resources.getColor(R.color.black)
 
-        binding.toolbar.title = "Question " + whatQuestion.toString()
-        binding.question.text = strings?.get(0) ?: ""
-        binding.optionOne.text = strings?.get(1) ?: ""
-        binding.optionTwo.text = strings?.get(2) ?: ""
-        binding.optionThree.text = strings?.get(3) ?: ""
-        binding.optionFour.text = strings?.get(4) ?: ""
-        binding.optionFive.text = strings?.get(5) ?: ""
+        binding.apply {
+            toolbar.title = "Question " + whatQuestion.toString()
+            question.text = strings?.get(0) ?: ""
 
-        when(whatRadioClicked) {
-            1-> binding.optionOne.isChecked = true
-            2-> binding.optionTwo.isChecked = true
-            3-> binding.optionThree.isChecked = true
-            4-> binding.optionFour.isChecked = true
-            5-> binding.optionFive.isChecked = true
-            else -> {
-                binding.radioGroup.clearCheck()
-                binding.nextButton.isEnabled = false
+            radioGroup.apply {
+                //Make option buttons
+                if (strings != null) {
+                    for (i in 1..strings.lastIndex) {
+                        addView(
+                            RadioButton(requireContext()).apply {
+                                id = i
+                                textSize = 17F
+                                text = strings[i]
+                            }
+                        )
+                    }
+
+
+                    if (whatRadioClicked in 1..strings.lastIndex) {
+                        radioGroup.findViewById<RadioButton>(whatRadioClicked?:0).isChecked = true
+                    } else {
+                        clearCheck()
+                        nextButton.isEnabled = false
+                    }
+
+                    setOnCheckedChangeListener { _, _ ->
+                        nextButton.isEnabled = true
+                    }
+                }
             }
-        }
 
-        if(whatQuestion == 1) {
-            binding.previousButton.visibility = View.INVISIBLE
-            binding.toolbar.navigationIcon = null
-        }
-        else binding.previousButton.visibility = View.VISIBLE
-        return view
-    }
+            if (whatQuestion == 1) {
+                previousButton.visibility = View.INVISIBLE
+                toolbar.navigationIcon = null
+            } else previousButton.visibility = View.VISIBLE
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
-        val whatQuestion = arguments?.getInt(WHAT_QUESTION_KEY)
+            if (whatQuestion != 1) toolbar.setNavigationOnClickListener {
+                goToPreviousFragment()
+            }
+            previousButton.setOnClickListener {
+                goToPreviousFragment()
+            }
 
-        if(whatQuestion!= 1) binding.toolbar.setNavigationOnClickListener {
-            goToPreviousFragment()
-        }
-        binding.previousButton.setOnClickListener {
-            goToPreviousFragment()
-
-        }
-        binding.radioGroup.setOnCheckedChangeListener { _, _ ->
-            binding.nextButton.isEnabled = true
-        }
-        binding.nextButton.setOnClickListener {
-            when(binding.radioGroup.checkedRadioButtonId) {
-                binding.optionOne.id -> {
-                    mainActivity().questionAnswerSaver(1)
-                    mainActivity().openFragment(true)
-                }
-
-                binding.optionTwo.id -> {
-                    mainActivity().questionAnswerSaver(2)
-                    mainActivity().openFragment(true)
-                }
-
-                binding.optionThree.id -> {
-                    mainActivity().questionAnswerSaver(3)
-                    mainActivity().openFragment(true)
-                }
-
-                binding.optionFour.id -> {
-                    mainActivity().questionAnswerSaver(4)
-                    mainActivity().openFragment(true)
-                }
-
-                binding.optionFive.id -> {
-                    mainActivity().questionAnswerSaver(5)
-                    mainActivity().openFragment(true)
+            nextButton.setOnClickListener {
+                dataPasser.apply {
+                    questionAnswerSaver(radioGroup.checkedRadioButtonId)
+                    openFragment(true)
                 }
             }
         }
     }
 
     private fun goToPreviousFragment() {
-        when(binding.radioGroup.checkedRadioButtonId) {
-            binding.optionOne.id -> {
-                mainActivity().questionAnswerSaver(1)
-                mainActivity().openFragment(false)
-            }
-
-            binding.optionTwo.id -> {
-                mainActivity().questionAnswerSaver(2)
-                mainActivity().openFragment(false)
-            }
-
-            binding.optionThree.id -> {
-                mainActivity().questionAnswerSaver(3)
-                mainActivity().openFragment(false)
-            }
-            binding.optionFour.id -> {
-                mainActivity().questionAnswerSaver(4)
-                mainActivity().openFragment(false)
-            }
-
-            binding.optionFive.id -> {
-                mainActivity().questionAnswerSaver(5)
-                mainActivity().openFragment(false)
-            }
-            else -> mainActivity().openFragment(false)
-
+        dataPasser.apply {
+            questionAnswerSaver(binding.radioGroup.checkedRadioButtonId)
+            openFragment(false)
         }
-    }
-
-    companion object {
-
-        @JvmStatic
-        fun newInstance(previousResult: Int, strings: Array<String>, whatQuestion: Int): FragmentQuiz {
-            val fragment = FragmentQuiz()
-            val args = Bundle()
-            args.putInt(PREVIOUS_RESULT_KEY, previousResult)
-            args.putInt(WHAT_QUESTION_KEY, whatQuestion)
-            args.putStringArray(STRINGS_KEY, strings)
-            fragment.arguments = args
-            return fragment
-        }
-
-        private const val PREVIOUS_RESULT_KEY = "PREVIOUS_RESULT"
-        private const val STRINGS_KEY = "STRINGS"
-        private const val WHAT_QUESTION_KEY = "WHAT_QUESTION"
-
     }
 
     override fun onDestroyView() {
@@ -163,4 +122,26 @@ class FragmentQuiz: Fragment(R.layout.fragment_quiz) {
         _binding = null
     }
 
+    companion object {
+
+        @JvmStatic
+        fun newInstance(
+            previousResult: Int,
+            strings: Array<String>,
+            whatQuestion: Int
+        ): FragmentQuiz {
+            return FragmentQuiz().apply {
+                arguments = bundleOf(
+                    PREVIOUS_RESULT_KEY to previousResult,
+                    WHAT_QUESTION_KEY to whatQuestion,
+                    STRINGS_KEY to strings
+                )
+            }
+        }
+
+        private const val PREVIOUS_RESULT_KEY = "PREVIOUS_RESULT"
+        private const val STRINGS_KEY = "STRINGS"
+        private const val WHAT_QUESTION_KEY = "WHAT_QUESTION"
+
+    }
 }

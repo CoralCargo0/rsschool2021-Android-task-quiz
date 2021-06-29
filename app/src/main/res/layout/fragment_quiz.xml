@@ -39,7 +39,7 @@
 
             <androidx.constraintlayout.widget.Guideline
                 android:id="@+id/margin_start_guideline"
-                android:layout_width="0dp"
+                android:layout_width="0px"
                 android:layout_height="0dp"
                 android:orientation="vertical"
                 app:layout_constraintGuide_begin="16dp" />
@@ -84,36 +84,6 @@
                 app:layout_constraintStart_toStartOf="@id/margin_start_guideline"
                 app:layout_constraintTop_toBottomOf="@id/question">
 
-                <RadioButton
-                    android:id="@+id/option_one"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    tools:text="Option 1" />
-
-                <RadioButton
-                    android:id="@+id/option_two"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    tools:text="Option 2" />
-
-                <RadioButton
-                    android:id="@+id/option_three"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    tools:text="Option 3" />
-
-                <RadioButton
-                    android:id="@+id/option_four"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    tools:checked="true"
-                    tools:text="Option 4" />
-
-                <RadioButton
-                    android:id="@+id/option_five"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    tools:text="Option 5" />
 
             </RadioGroup>
         </androidx.constraintlayout.widget.ConstraintLayout>

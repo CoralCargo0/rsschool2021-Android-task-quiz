@@ -10,8 +10,6 @@ import com.rsschool.quiz.MainActivity
 
 fun Fragment.hideKeyboard() = view?.let { activity?.hideKeyboard(it) }
 
-fun Fragment.mainActivity() = requireActivity() as MainActivity
-
 fun Activity.hideKeyboard() = hideKeyboard(currentFocus ?: View(this))
 
 fun Context.hideKeyboard(view: View) {
